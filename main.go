@@ -14,6 +14,11 @@ import (
 )
 
 func main() {
+	root := "work"
+	if envRoot := os.Getenv("GITCLONE_ROOT_DIR"); envRoot != "" {
+		root = envRoot
+	}
+
 	homedir, err := os.UserHomeDir()
 	if err != nil {
 		panic(err)
@@ -26,7 +31,7 @@ func main() {
 
 	link := os.Args[1]
 	org, project := extractData(link)
-	orgDir := filepath.Join(homedir, "work/github.com", org)
+	orgDir := filepath.Join(homedir, root, "github.com", org)
 	if err := os.MkdirAll(orgDir, 0o755); err != nil {
 		panic(err)
 	}
