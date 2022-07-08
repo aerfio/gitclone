@@ -26,7 +26,7 @@ func main() {
 
 	link := os.Args[1]
 	org, project := extractData(link)
-	orgDir := filepath.Join(homedir, "work/github", org)
+	orgDir := filepath.Join(homedir, "work/github.com", org)
 	if err := os.MkdirAll(orgDir, 0o755); err != nil {
 		panic(err)
 	}
