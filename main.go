@@ -31,7 +31,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := exe(fmt.Sprintf("gh repo clone %s/%s", org, project), orgDir); err != nil {
+	if err := clone(org, project, orgDir); err != nil {
 		panic(err)
 	}
 
@@ -42,7 +42,11 @@ func main() {
 }
 
 func extractData(link string) (string, string) {
-	parsedUrl, err := url.ParseRequestURI(link)
+	if strings.HasPrefix(link, "git@") && strings.HasSuffix(link, ".git") {
+		return handleSSHLink(link)
+	}
+
+	parsedUrl, err := url.ParseRequestURI(strings.TrimSuffix(link, ".git"))
 	if err != nil {
 		panic(err)
 	}
@@ -63,8 +67,20 @@ func extractData(link string) (string, string) {
 	return org, project
 }
 
-func exe(command, dir string) error {
-	cmd := exec.Command("bash", "-c", command)
+func handleSSHLink(link string) (string, string) {
+	orgRepo := strings.Split(
+		strings.TrimSuffix(
+			strings.TrimPrefix(link, "git@github.com:"),
+			".git"),
+		"/")
+	if len(orgRepo) != 2 {
+		panic(fmt.Errorf("%+v should have 2 elements", orgRepo))
+	}
+	return orgRepo[0], orgRepo[1]
+}
+
+func clone(org, repo string, dir string) error {
+	cmd := exec.Command("gh", "repo", "clone", org+"/"+repo)
 	cmd.Dir = dir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
