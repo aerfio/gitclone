@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -32,6 +31,20 @@ func main() {
 	link := os.Args[1]
 	org, project := extractData(link)
 	orgDir := filepath.Join(homedir, root, "github.com", org)
+
+	exists, err := checkIfExists(filepath.Join(orgDir, project))
+	if err != nil {
+		panic(err)
+	}
+
+	changeDirMsg := fmt.Sprintf("cd %s", filepath.Join(orgDir, project))
+
+	if exists {
+		fmt.Printf("\nProject already cloned\nCopied \n%s\nto clipboard", color.HiGreenString(changeDirMsg))
+		_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
+		return
+	}
+
 	if err := os.MkdirAll(orgDir, 0o755); err != nil {
 		panic(err)
 	}
@@ -40,10 +53,19 @@ func main() {
 		panic(err)
 	}
 
-	msg := fmt.Sprintf("cd %s", path.Join(orgDir, project))
+	fmt.Printf("\nCopied \n%s\nto clipboard", color.HiGreenString(changeDirMsg))
+	_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
+}
 
-	fmt.Printf("\nCopied \n%s\nto clipboard", color.HiGreenString(msg))
-	_ = clipboard.Write(clipboard.FmtText, []byte(msg))
+func checkIfExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }
 
 func extractData(link string) (string, string) {
@@ -51,10 +73,16 @@ func extractData(link string) (string, string) {
 		return handleSSHLink(link)
 	}
 
-	parsedUrl, err := url.ParseRequestURI(strings.TrimSuffix(link, ".git"))
+	linkWithoutGitExtension := strings.TrimSuffix(link, ".git")
+	if strings.HasPrefix(linkWithoutGitExtension, "github.com") {
+		linkWithoutGitExtension = fmt.Sprintf("https://%s", linkWithoutGitExtension)
+	}
+	parsedUrl, err := url.ParseRequestURI(linkWithoutGitExtension)
 	if err != nil {
 		panic(err)
 	}
+	fmt.Println(parsedUrl.String())
+
 	org, projectRaw, found := strings.Cut(strings.TrimPrefix(parsedUrl.Path, "/"), "/")
 	if !found {
 		panic(fmt.Errorf("couldnt cut org and project from %q, full: %#v", parsedUrl.Path, parsedUrl))
