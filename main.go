@@ -38,9 +38,9 @@ func main() {
 	}
 
 	changeDirMsg := fmt.Sprintf("cd %s", filepath.Join(orgDir, project))
-
+	fmt.Printf("Cloning %s into %s\n", color.GreenString(fmt.Sprintf("%s/%s", org, project)), filepath.Join(orgDir, project))
 	if exists {
-		fmt.Printf("\nProject already cloned\nCopied \n%s\nto clipboard", color.HiGreenString(changeDirMsg))
+		fmt.Printf("Project already cloned, copied %s to clipboard\n", color.HiGreenString(changeDirMsg))
 		_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
 		return
 	}
@@ -81,7 +81,6 @@ func extractData(link string) (string, string) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(parsedUrl.String())
 
 	org, projectRaw, found := strings.Cut(strings.TrimPrefix(parsedUrl.Path, "/"), "/")
 	if !found {
