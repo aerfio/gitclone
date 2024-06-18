@@ -53,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("\nCopied \n%s\nto clipboard", color.HiGreenString(changeDirMsg))
+	fmt.Printf("\nCopied \n%s\nto clipboard\n", color.HiGreenString(changeDirMsg))
 	_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
 }
 
