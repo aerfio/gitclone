@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/atotto/clipboard"
 	"github.com/fatih/color"
-	"golang.design/x/clipboard"
 )
 
 func main() {
@@ -19,11 +19,6 @@ func main() {
 	}
 
 	homedir, err := os.UserHomeDir()
-	if err != nil {
-		panic(err)
-	}
-
-	err = clipboard.Init()
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +36,9 @@ func main() {
 	fmt.Printf("Cloning %s into %s\n", color.GreenString(fmt.Sprintf("%s/%s", org, project)), filepath.Join(orgDir, project))
 	if exists {
 		fmt.Printf("Project already cloned, copied %s to clipboard\n", color.HiGreenString(changeDirMsg))
-		_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
+		if err := clipboard.WriteAll(changeDirMsg); err != nil {
+			panic(err)
+		}
 		return
 	}
 
@@ -54,7 +51,9 @@ func main() {
 	}
 
 	fmt.Printf("\nCopied \n%s\nto clipboard\n", color.HiGreenString(changeDirMsg))
-	_ = clipboard.Write(clipboard.FmtText, []byte(changeDirMsg))
+	if err := clipboard.WriteAll(changeDirMsg); err != nil {
+		panic(err)
+	}
 }
 
 func checkIfExists(path string) (bool, error) {
